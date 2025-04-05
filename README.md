@@ -2,7 +2,7 @@
 
 ### Diagrama bloc a proiectului
 
-![alt text](tsc_diagrama.png)
+![tsc_diagrama](https://github.com/user-attachments/assets/1d7aafd5-7a60-404e-ab42-a7b13a0d373a)
 
 ---
 
