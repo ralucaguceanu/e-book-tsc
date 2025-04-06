@@ -38,3 +38,104 @@
 | 1   | T491B226K006AT          | [link](https://ro.mouser.com/ProductDetail/KEMET/T491B226K006AT?qs=jcsBHvPDQt8yMdJgz62biA%3D%3D)    | [link](https://ro.mouser.com/datasheet/2/447/KEM_T2005_T491-3316937.pdf)       |
 
 ---
+
+### Descrierea Funcționalității Hardware a Ebook Reader-ului
+
+Ebook readerul proiectat utilizează o arhitectură bazată pe microcontrolerul ESP32-C6, integrând multiple module pentru a oferi funcționalități avansate de afișare, stocare, conectivitate și monitorizare. Următoarea descriere detaliază componentele utilizate, interfețele de comunicare, specificațiile hardware și calculele de consum energetic.
+
+---
+
+### 1. Microcontroller Principal: ESP32-C6
+- **Rol:** Controlul central al ebook readerului, procesare date și comunicație wireless.
+- **Specificații:**
+  - Interfețe: SPI, I2C, USB.
+  - Alimentare: 3.3V.
+
+**Interfațare cu module:**
+- **E-Paper Display:** Interfață SPI pentru transfer rapid de date grafice.
+- **Memorie NOR Flash:** SPI pentru stocare firmware și resurse grafice.
+- **SD Card:** SPI pentru fișiere ebook.
+- **RTC DS3231SN:** I2C pentru menținerea orei și alarme.
+- **BME688 Sensor:** I2C pentru monitorizare mediu.
+- **Baterie Li-Po:** I2C pentru monitorizarea prin Fuel Gauge (MAX17048).
+- **USB-C:** Alimentare și transfer de date.
+- **Qwiic/Stemma QT:** Conectarea rapidă a modulelor suplimentare.
+
+---
+
+### 2. Alimentare și Management Energie
+- **Modul de Alimentare USB-C:** Asigură 5V pentru încărcare și comunicație USB 2.0.
+- **LDO Voltage Regulator:** Convertor 5V -> 3.3V pentru alimentarea modulelor.
+- **Protecție ESD:** TVS pe liniile USB pentru protecție la supratensiuni.
+- **Baterie Li-Po:** Monitorizare prin MCP73831 și MAX17048 pentru încărcare și nivel de baterie.
+- **Supercapacitor:** Menținerea energiei pe termen scurt.
+
+**Calcul Consum:**
+- Consum total estimat în funcționare: ~300 mA la 3.3V.
+- În standby: ~50 mA datorită modului de consum redus al ESP32 și e-paper.
+
+---
+
+### 3. Module de Afișare
+#### E-Paper Display
+- **Control:** Prin interfața SPI (MOSI, MISO, SCK, CS).
+- **Alimentare:** Tensiune 3.3V, controlată prin MOSFET pentru economisire.
+- **Reset și Busy:** Monitorizate prin GPIO pentru sincronizare.
+
+---
+
+### 4. Stocare Externă
+#### NOR Flash W25Q512JVEIQ (64MB)
+- **Interfață:** SPI (CS, SCK, MISO, MOSI)
+- **Rol:** Stocare firmware și resurse grafice.
+
+#### SD Card
+- **Interfață:** SPI pentru citire și scriere rapidă de date ebook.
+
+---
+
+### 5. Senzori și Monitorizare
+#### Senzor BME688 (Temperatură, Umiditate, Presiune, Calitate Aer)
+- **Interfață:** I2C.
+- **Alimentare:** 3.3V.
+
+#### Modulul RTC
+- **Interfață:** I2C.
+- **Alimentare Backup:** Supercapacitor pentru menținerea timpului în lipsa alimentării principale.
+- **DS3231SN:** Menține timpul și data.
+
+---
+
+### 6. Interfața de Utilizator
+- **Buton Reset:** Resetare manuală a microcontrollerului.
+- **Buton Boot:** Intrare în modul programare.
+- **Buton de Schimbare:** Configurabil pentru funcții speciale.
+
+---
+
+### 7. Testare și Monitorizare
+- **Test Pads:** Puncte de test pentru măsurarea semnalelor SPI, UART, I2C și tensiuni critice.
+- **Protecție ESD:** Pe toate liniile critice pentru prevenirea descărcărilor electrostatice.
+
+---
+
+### 8. Conectivitate Externă
+#### Qwiic / Stemma QT
+- **Interfață I2C:** Permite adăugarea rapidă de module senzoriale suplimentare.
+- **Conectare Modulară:** Permite prototipare rapidă și flexibilă.
+
+---
+
+### Folosirea pinilor ESP32-C6
+
+
+| Modul                  | Pini                                            | Interfață | Motiv                                                                     | 
+| ---------------------- | --------------------------------------------------------- | --------- | -------------------------------------------------------------------------- |
+| Modul RTC (DS3231)     | IO0 - INT\_RTC, IO1 - 32KHz, IO18 - RST, IO21 - SDA, IO22 - SCL | I2C       | Menține timpul chiar și atunci când ESP32 este oprit.                    |
+| Card MicroSD           | IO2 - MISO, IO4 - SS\_SD, IO6 - SCK, IO7 - MOSI                | SPI       | Permite stocarea și recuperarea fișierelor ebook.                        |
+| Memorie Flash Externă (NOR) | IO2 - MISO, IO6 - SCK, IO7 - MOSI, IO11 - Flash CS                   | SPI       | Oferă stocare suplimentară pentru datele aplicației.                     |
+| E-Paper Display        | IO3 - BUSY, IO5 - DC, IO6 - SCK, IO7 - MOSI, IO10 - EPD CS, IO23 - RST | SPI       | Transferă datele de imagine către afișaj și controlează starea acestuia. |
+| Senzor de Mediu (BME688) | IO21 - SDA, IO22 - SCL                                     | I2C       | Citește temperatura, umiditatea, presiunea și calitatea aerului.         |
+| Monitorizare Baterie   | IO21 - SDA, IO22 - SCL                                     | I2C       | Citește tensiunea bateriei și starea de încărcare.                       |
+| Diverse               | IO9 - BOOT, IO15 - CHANGE, EN - RESET, NC - Not Connected                          | GPIO      | Intrare de utilizator pentru interacțiunea cu dispozitivul.              |
+
